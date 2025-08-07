@@ -101,6 +101,26 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Create scoped package.json for GitHub Packages
+        run: |
+          # Create a temporary package.json with scoped name for GitHub Packages
+          jq '.name = "@${{ github.repository_owner }}/react-use-fittext" | .publishConfig.registry = "https://npm.pkg.github.com"' package.json > package-github.json
+          mv package-github.json package.json
+
+      - name: Setup Node.js for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Publish to GitHub Packages
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Restore original package.json
+        run: git checkout package.json
+
       - name: Push version changes
         run: git push --follow-tags
 
