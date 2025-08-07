@@ -148,5 +148,3 @@ export const useFitText = ({
 
   return { containerRef, textRef, fontSize };
 };
-
-export default useFitText;

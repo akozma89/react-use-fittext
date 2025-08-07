@@ -1,3 +1,3 @@
-export { default, useFitText } from './useFitText';
+export { useFitText } from './useFitText';
 export * from './types';
 export * from './utils';
