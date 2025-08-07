@@ -1,0 +1,12 @@
+/* You can remove this CSS file and replace with Tailwind classes in your JSX */
+/* Example of Tailwind equivalent:
+
+.resizable-box {
+  @apply relative bg-gray-100 border-2 border-gray-300 overflow-hidden box-border;
+}
+
+.resize-handle {
+  @apply absolute bottom-0 right-0 w-5 h-5 bg-primary-500 cursor-nwse-resize;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+*/

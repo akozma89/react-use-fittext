@@ -1,0 +1,70 @@
+{
+  "name": "react-use-fittext",
+  "version": "0.1.0",
+  "description": "React hook to automatically adjust font size to fit text in its container",
+  "author": "Your Name",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "hooks",
+    "typography",
+    "font",
+    "resize",
+    "text",
+    "fit",
+    "responsive"
+  ],
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "dev": "cd example && npm run dev",
+    "build": "vite build",
+    "preview": "cd example && npm run preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "^20.8.0",
+    "@types/react": "^18.2.24",
+    "@types/react-dom": "^18.2.8",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^8.50.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "happy-dom": "^18.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0",
+    "vite-plugin-dts": "^3.6.0",
+    "vitest": "^3.2.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/react-use-fittext"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/react-use-fittext/issues"
+  },
+  "homepage": "https://github.com/yourusername/react-use-fittext#readme"
+}

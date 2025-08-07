@@ -1,0 +1,19 @@
+@import "./theme.css";
+
+@reference "tailwindcss";
+
+@tailwind utilities;
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 font-semibold rounded-lg shadow-md transition-all duration-200 ease-in-out;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500/50;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300;
+  }
+}
