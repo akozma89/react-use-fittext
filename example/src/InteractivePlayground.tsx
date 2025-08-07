@@ -39,7 +39,6 @@ export function InteractivePlayground({
     debounceDelay,
   });
 
-  // Quick preset texts for testing
   const presetTexts = [
     "Short text",
     "This is a medium length text example",
@@ -61,7 +60,6 @@ export function InteractivePlayground({
         </p>
       </div>
 
-      {/* Controls */}
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 border-b border-gray-300 pb-2 flex items-center">
           <span className="text-2xl mr-2">⚙️</span>
@@ -69,7 +67,6 @@ export function InteractivePlayground({
         </h3>
 
         <div className="space-y-6">
-          {/* Text Content */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Text Content
@@ -98,7 +95,6 @@ export function InteractivePlayground({
             </div>
           </div>
 
-          {/* Main Controls */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <div className="flex flex-col flex-1/6">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -189,7 +185,6 @@ export function InteractivePlayground({
             </div>
           </div>
 
-          {/* Current Settings Summary */}
           <div className="grid md:grid-cols-3 gap-4 text-sm">
             <div className="p-3 bg-blue-50 rounded border border-blue-200">
               <strong className="text-blue-900">Current Font Size:</strong>
@@ -209,7 +204,6 @@ export function InteractivePlayground({
         </div>
       </div>
 
-      {/* Resizable Container */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
           <span className="text-2xl mr-2">🎯</span>
@@ -248,7 +242,6 @@ export function InteractivePlayground({
         </div>
       </div>
 
-      {/* Advanced Tips */}
       <div className="grid md:grid-cols-2 gap-6">
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
           <h4 className="font-semibold mb-3 text-emerald-900 flex items-center">
@@ -309,7 +302,6 @@ export function InteractivePlayground({
         </div>
       </div>
 
-      {/* Code Example */}
       <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
         <h4 className="font-semibold mb-3 text-gray-800 flex items-center">
           <span className="text-lg mr-2">📝</span>

@@ -16,7 +16,6 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-4 text-primary-700 bg-clip-text bg-gradient-to-r from-primary-600 to-primary-800">
             react-use-fittext
@@ -26,16 +25,9 @@ function App() {
           </p>
         </div>
 
-        {/* Description & Props Table */}
         <Description />
-
-        {/* Line Mode Comparison */}
         <LineModeDemo />
-
-        {/* Fit Mode Comparison */}
         <FitModeDemo />
-
-        {/* Interactive Playground */}
         <InteractivePlayground
           text={text}
           setText={setText}
@@ -50,8 +42,6 @@ function App() {
           debounceDelay={debounceDelay}
           setDebounceDelay={setDebounceDelay}
         />
-
-        {/* Performance Test */}
         <PerformanceTest />
       </div>
     </div>

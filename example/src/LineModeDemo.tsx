@@ -24,27 +24,6 @@ export function LineModeDemo() {
   const multiLineShort = useFitText({ lineMode: 'multi', minFontSize: 12, maxFontSize: 60 });
   const singleLineShort = useFitText({ lineMode: 'single', minFontSize: 12, maxFontSize: 60 });
 
-  const containerStyle = {
-    width: containerWidth,
-    height: containerHeight,
-    border: '2px solid #374151',
-    padding: '16px',
-    margin: '10px auto',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f9fafb',
-    overflow: 'hidden',
-    borderRadius: '8px'
-  };
-
-  const textStyle = {
-    display: 'block',
-    textAlign: 'center' as const,
-    width: '100%',
-    fontWeight: '500'
-  };
-
   return (
     <div className="p-6 bg-white rounded-lg shadow">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Line Mode Comparison</h2>
@@ -70,8 +49,14 @@ export function LineModeDemo() {
                 ✅ Better for readability
               </p>
             </div>
-            <div style={containerStyle} ref={multiLineMode.containerRef as React.RefObject<HTMLDivElement>}>
-              <span style={textStyle} ref={multiLineMode.textRef as React.RefObject<HTMLSpanElement>}>
+            <div
+              className="w-72 h-32 border-2 border-gray-600 p-4 mx-auto flex items-center justify-center bg-gray-50 overflow-hidden rounded-lg"
+              ref={multiLineMode.containerRef as React.RefObject<HTMLDivElement>}
+            >
+              <span
+                className="block text-center w-full font-medium"
+                ref={multiLineMode.textRef as React.RefObject<HTMLSpanElement>}
+              >
                 {sampleText}
               </span>
             </div>
@@ -94,8 +79,14 @@ export function LineModeDemo() {
                 ⚠️ Consistent height behavior
               </p>
             </div>
-            <div style={containerStyle} ref={singleLineMode.containerRef as React.RefObject<HTMLDivElement>}>
-              <span style={textStyle} ref={singleLineMode.textRef as React.RefObject<HTMLSpanElement>}>
+            <div
+              className="w-72 h-32 border-2 border-gray-600 p-4 mx-auto flex items-center justify-center bg-gray-50 overflow-hidden rounded-lg"
+              ref={singleLineMode.containerRef as React.RefObject<HTMLDivElement>}
+            >
+              <span
+                className="block text-center w-full font-medium"
+                ref={singleLineMode.textRef as React.RefObject<HTMLSpanElement>}
+              >
                 {sampleText}
               </span>
             </div>
@@ -113,8 +104,14 @@ export function LineModeDemo() {
           <div>
             <h4 className="font-semibold mb-2 text-green-700">Multi-line: "{shortText}"</h4>
             <p className="text-sm text-gray-600 mb-2">Font size: {multiLineShort.fontSize.toFixed(1)}px</p>
-            <div style={containerStyle} ref={multiLineShort.containerRef as React.RefObject<HTMLDivElement>}>
-              <span style={textStyle} ref={multiLineShort.textRef as React.RefObject<HTMLSpanElement>}>
+            <div
+              className="w-72 h-32 border-2 border-gray-600 p-4 mx-auto flex items-center justify-center bg-gray-50 overflow-hidden rounded-lg"
+              ref={multiLineShort.containerRef as React.RefObject<HTMLDivElement>}
+            >
+              <span
+                className="block text-center w-full font-medium"
+                ref={multiLineShort.textRef as React.RefObject<HTMLSpanElement>}
+              >
                 {shortText}
               </span>
             </div>
@@ -123,8 +120,14 @@ export function LineModeDemo() {
           <div>
             <h4 className="font-semibold mb-2 text-blue-700">Single-line: "{shortText}"</h4>
             <p className="text-sm text-gray-600 mb-2">Font size: {singleLineShort.fontSize.toFixed(1)}px</p>
-            <div style={containerStyle} ref={singleLineShort.containerRef as React.RefObject<HTMLDivElement>}>
-              <span style={textStyle} ref={singleLineShort.textRef as React.RefObject<HTMLSpanElement>}>
+            <div
+              className="w-72 h-32 border-2 border-gray-600 p-4 mx-auto flex items-center justify-center bg-gray-50 overflow-hidden rounded-lg"
+              ref={singleLineShort.containerRef as React.RefObject<HTMLDivElement>}
+            >
+              <span
+                className="block text-center w-full font-medium"
+                ref={singleLineShort.textRef as React.RefObject<HTMLSpanElement>}
+              >
                 {shortText}
               </span>
             </div>
@@ -150,52 +153,31 @@ export function LineModeDemo() {
             </li>
             <li className="flex items-start">
               <span className="text-green-600 mr-2 mt-0.5">•</span>
-              <span><strong>Accessibility focus:</strong> When full readability is critical</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-green-600 mr-2 mt-0.5">•</span>
-              <span><strong>Content cards:</strong> Product descriptions, news articles</span>
+              <span><strong>Accessibility:</strong> Better for screen readers</span>
             </li>
           </ul>
         </div>
 
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h4 className="font-semibold mb-3 text-blue-900">🎯 When to Use Single-line</h4>
+          <h4 className="font-semibold mb-3 text-blue-900">📏 When to Use Single-line</h4>
           <ul className="text-sm space-y-2 text-blue-800">
             <li className="flex items-start">
               <span className="text-blue-600 mr-2 mt-0.5">•</span>
-              <span><strong>Titles and headers:</strong> Page titles, section headers</span>
+              <span><strong>Headers and titles:</strong> Consistent visual height</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2 mt-0.5">•</span>
-              <span><strong>Navigation items:</strong> Menu labels, button text</span>
+              <span><strong>Labels and tags:</strong> Short, predictable content</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2 mt-0.5">•</span>
-              <span><strong>Data labels:</strong> Chart labels, table headers</span>
+              <span><strong>Buttons and badges:</strong> Fixed container layouts</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2 mt-0.5">•</span>
-              <span><strong>Fixed layouts:</strong> When consistent height is important</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-600 mr-2 mt-0.5">•</span>
-              <span><strong>Brand elements:</strong> Logos, taglines, slogans</span>
+              <span><strong>Data displays:</strong> Numbers, metrics, short values</span>
             </li>
           </ul>
-        </div>
-      </div>
-
-      <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-        <h4 className="font-semibold mb-2 text-amber-900 flex items-center">
-          <span className="text-xl mr-2">💡</span>
-          Pro Tips
-        </h4>
-        <div className="text-sm text-amber-800 space-y-2">
-          <p><strong>Performance:</strong> Single-line mode is slightly faster as it doesn't need to calculate line wrapping.</p>
-          <p><strong>Responsive design:</strong> Multi-line mode adapts better to very narrow containers.</p>
-          <p><strong>Fallback strategy:</strong> Consider using single-line for titles with a multi-line subtitle for overflow content.</p>
-          <p className="mt-0"><strong>Testing:</strong> Always test with the longest expected text content to ensure proper behavior.</p>
         </div>
       </div>
     </div>

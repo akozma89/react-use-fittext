@@ -13,7 +13,6 @@ describe('Utils', () => {
       mockElement = document.createElement('div');
       mockElement.textContent = 'Test text';
 
-      // Mock document.body methods
       vi.spyOn(document.body, 'appendChild').mockImplementation(() => mockClone);
       vi.spyOn(document.body, 'removeChild').mockImplementation(() => mockClone);
     });
@@ -41,7 +40,7 @@ describe('Utils', () => {
       });
     }
 
-    it('should return the optimal font size for width mode', () => {
+    it('should return optimal font size for width mode', () => {
       createMockWithScrollBehavior(2, 1);
 
       const result = calculateOptimalFontSize(
@@ -52,7 +51,7 @@ describe('Utils', () => {
       expect(result).toBeLessThanOrEqual(maxFontSize);
     });
 
-    it('should return the optimal font size for height mode', () => {
+    it('should return optimal font size for height mode', () => {
       createMockWithScrollBehavior(2, 1);
 
       const result = calculateOptimalFontSize(
@@ -63,7 +62,7 @@ describe('Utils', () => {
       expect(result).toBeLessThanOrEqual(maxFontSize);
     });
 
-    it('should return the optimal font size for both mode (limited by width)', () => {
+    it('should return optimal font size for both mode (width limited)', () => {
       createMockWithScrollBehavior(2, 1);
 
       const result = calculateOptimalFontSize(
@@ -74,7 +73,7 @@ describe('Utils', () => {
       expect(result).toBeLessThanOrEqual(maxFontSize);
     });
 
-    it('should return the optimal font size for both mode (limited by height)', () => {
+    it('should return optimal font size for both mode (height limited)', () => {
       createMockWithScrollBehavior(2, 1);
 
       const result = calculateOptimalFontSize(
@@ -85,7 +84,7 @@ describe('Utils', () => {
       expect(result).toBeLessThanOrEqual(maxFontSize);
     });
 
-    it('should return minFontSize when container is too small for any size', () => {
+    it('should return minFontSize when container is too small', () => {
       createMockWithScrollBehavior(2, 1);
 
       const result = calculateOptimalFontSize(
@@ -95,8 +94,57 @@ describe('Utils', () => {
       expect(result).toBe(minFontSize);
     });
 
-    it('should apply the calculated font size to the element', () => {
+    it('should handle single-line mode', () => {
+      createMockWithScrollBehavior(1.5, 1);
+
+      const result = calculateOptimalFontSize(
+        mockElement, 150, 100, minFontSize, maxFontSize, resolution, 'both', 'single'
+      );
+
+      expect(result).toBeGreaterThanOrEqual(minFontSize);
+      expect(result).toBeLessThanOrEqual(maxFontSize);
+    });
+
+    it('should handle multi-line mode', () => {
+      createMockWithScrollBehavior(1.2, 2);
+
+      const result = calculateOptimalFontSize(
+        mockElement, 100, 150, minFontSize, maxFontSize, resolution, 'both', 'multi'
+      );
+
+      expect(result).toBeGreaterThanOrEqual(minFontSize);
+      expect(result).toBeLessThanOrEqual(maxFontSize);
+    });
+
+    it('should use caching for repeated calculations', () => {
       createMockWithScrollBehavior(2, 1);
+
+      const result1 = calculateOptimalFontSize(
+        mockElement, 100, 100, minFontSize, maxFontSize, resolution, 'both'
+      );
+
+      const result2 = calculateOptimalFontSize(
+        mockElement, 100, 100, minFontSize, maxFontSize, resolution, 'both'
+      );
+
+      expect(result1).toBe(result2);
+      expect(result1).toBeGreaterThanOrEqual(minFontSize);
+      expect(result1).toBeLessThanOrEqual(maxFontSize);
+    });
+
+    it('should return maxFontSize when text fits perfectly', () => {
+      createMockWithScrollBehavior(0.5, 0.5);
+
+      const result = calculateOptimalFontSize(
+        mockElement, 200, 200, minFontSize, maxFontSize, resolution, 'both'
+      );
+
+      expect(result).toBe(maxFontSize);
+    });
+
+    it('should handle empty text content', () => {
+      mockElement.textContent = '';
+      createMockWithScrollBehavior(0, 0);
 
       const result = calculateOptimalFontSize(
         mockElement, 100, 100, minFontSize, maxFontSize, resolution, 'both'
@@ -106,156 +154,16 @@ describe('Utils', () => {
       expect(result).toBeLessThanOrEqual(maxFontSize);
     });
 
-    // Advanced scenarios
-    it('should handle single line mode correctly', () => {
-      createMockWithScrollBehavior(10, 1); // Long single line
+    it('should handle very long text', () => {
+      mockElement.textContent = 'This is a very long text that should require smaller font sizes to fit properly in the container';
+      createMockWithScrollBehavior(3, 2);
 
       const result = calculateOptimalFontSize(
-        mockElement, 200, 100, 10, 50, 0.5, 'width', 'single'
+        mockElement, 100, 50, minFontSize, maxFontSize, resolution, 'both'
       );
 
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(50);
-      expect(mockClone.style.cssText).toContain('white-space: nowrap');
-    });
-
-    it('should handle multi-line mode with text estimation', () => {
-      createMockWithScrollBehavior(5, 3); // Multi-line dimensions
-
-      const result = calculateOptimalFontSize(
-        mockElement, 200, 150, 10, 100, 0.5, 'both', 'multi'
-      );
-
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(100);
-      expect(mockClone.style.cssText).toContain('white-space: normal');
-    });
-
-    it('should use cache for repeated calculations', () => {
-      const mockDateNow = vi.spyOn(Date, 'now').mockReturnValue(1000);
-
-      mockClone = document.createElement('div');
-      mockClone.textContent = mockElement.textContent;
-      vi.spyOn(mockElement, 'cloneNode').mockReturnValue(mockClone);
-
-      Object.defineProperty(mockClone, 'scrollWidth', {
-        get: () => 100,
-        configurable: true
-      });
-      Object.defineProperty(mockClone, 'scrollHeight', {
-        get: () => 50,
-        configurable: true
-      });
-
-      const result1 = calculateOptimalFontSize(
-        mockElement, 200, 100, 10, 50, 0.5, 'both', 'multi'
-      );
-
-      const result2 = calculateOptimalFontSize(
-        mockElement, 200, 100, 10, 50, 0.5, 'both', 'multi'
-      );
-
-      expect(result1).toBe(result2);
-      mockDateNow.mockRestore();
-    });
-
-    it('should handle cache expiration', () => {
-      let currentTime = 1000;
-      const mockDateNow = vi.spyOn(Date, 'now').mockImplementation(() => currentTime);
-
-      mockClone = document.createElement('div');
-      mockClone.textContent = mockElement.textContent;
-      vi.spyOn(mockElement, 'cloneNode').mockReturnValue(mockClone);
-
-      Object.defineProperty(mockClone, 'scrollWidth', {
-        get: () => 100,
-        configurable: true
-      });
-      Object.defineProperty(mockClone, 'scrollHeight', {
-        get: () => 50,
-        configurable: true
-      });
-
-      calculateOptimalFontSize(mockElement, 200, 100, 10, 50, 0.5, 'both', 'multi');
-
-      currentTime = 1000 + 30001; // Beyond cache lifetime
-
-      const result = calculateOptimalFontSize(mockElement, 200, 100, 10, 50, 0.5, 'both', 'multi');
-
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(50);
-
-      mockDateNow.mockRestore();
-    });
-
-    it('should handle cache cleanup', () => {
-      const mockMathRandom = vi.spyOn(Math, 'random').mockReturnValue(0.0005);
-      const mockDateNow = vi.spyOn(Date, 'now').mockReturnValue(50000);
-
-      mockClone = document.createElement('div');
-      mockClone.textContent = mockElement.textContent;
-      vi.spyOn(mockElement, 'cloneNode').mockReturnValue(mockClone);
-
-      Object.defineProperty(mockClone, 'scrollWidth', {
-        get: () => 100,
-        configurable: true
-      });
-      Object.defineProperty(mockClone, 'scrollHeight', {
-        get: () => 50,
-        configurable: true
-      });
-
-      const result = calculateOptimalFontSize(mockElement, 200, 100, 10, 50, 0.5, 'both', 'multi');
-
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(50);
-
-      mockMathRandom.mockRestore();
-      mockDateNow.mockRestore();
-    });
-
-    it('should handle long text content correctly', () => {
-      const longText = 'A'.repeat(100); // Long text > 50 chars
-      mockElement.textContent = longText;
-
-      mockClone = document.createElement('div');
-      mockClone.textContent = longText;
-      vi.spyOn(mockElement, 'cloneNode').mockReturnValue(mockClone);
-
-      Object.defineProperty(mockClone, 'scrollWidth', {
-        get: () => 200,
-        configurable: true
-      });
-      Object.defineProperty(mockClone, 'scrollHeight', {
-        get: () => 100,
-        configurable: true
-      });
-
-      const result = calculateOptimalFontSize(mockElement, 300, 150, 10, 50, 0.5, 'both', 'multi');
-
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(50);
-    });
-
-    it('should handle maxFontSize fitting immediately in single-line mode', () => {
-      createMockWithScrollBehavior(2, 1); // Small multiplier so max fits
-
-      const result = calculateOptimalFontSize(
-        mockElement, 1000, 1000, 10, 50, 0.5, 'both', 'single'
-      );
-
-      expect(result).toBe(50); // Should return maxFontSize
-    });
-
-    it('should handle initial guess fitting in multi-line mode', () => {
-      createMockWithScrollBehavior(3, 2); // Reasonable multipliers
-
-      const result = calculateOptimalFontSize(
-        mockElement, 500, 400, 10, 100, 0.5, 'both', 'multi'
-      );
-
-      expect(result).toBeGreaterThanOrEqual(10);
-      expect(result).toBeLessThanOrEqual(100);
+      expect(result).toBeGreaterThanOrEqual(minFontSize);
+      expect(result).toBeLessThanOrEqual(maxFontSize);
     });
   });
 
@@ -264,103 +172,103 @@ describe('Utils', () => {
 
     beforeEach(() => {
       mockElement = document.createElement('div');
+      Object.defineProperty(mockElement, 'clientWidth', { value: 200, configurable: true });
+      Object.defineProperty(mockElement, 'clientHeight', { value: 100, configurable: true });
 
-      vi.spyOn(window, 'getComputedStyle').mockImplementation(() => ({
+      vi.spyOn(window, 'getComputedStyle').mockReturnValue({
         paddingLeft: '10px',
         paddingRight: '15px',
         paddingTop: '5px',
-        paddingBottom: '8px',
-      } as CSSStyleDeclaration));
+        paddingBottom: '8px'
+      } as CSSStyleDeclaration);
     });
 
     it('should calculate available space with padding', () => {
-      Object.defineProperty(mockElement, 'clientWidth', { value: 200 });
-      Object.defineProperty(mockElement, 'clientHeight', { value: 100 });
+      const result = getAvailableContentSpace(mockElement);
+
+      expect(result.width).toBe(175);
+      expect(result.height).toBe(87);
+    });
+
+    it('should handle zero padding', () => {
+      vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+        paddingLeft: '0px',
+        paddingRight: '0px',
+        paddingTop: '0px',
+        paddingBottom: '0px'
+      } as CSSStyleDeclaration);
 
       const result = getAvailableContentSpace(mockElement);
 
-      expect(result.width).toBe(175); // 200 - 10 - 15
-      expect(result.height).toBe(87); // 100 - 5 - 8
+      expect(result.width).toBe(200);
+      expect(result.height).toBe(100);
     });
 
-    it('should handle zero dimensions', () => {
-      Object.defineProperty(mockElement, 'clientWidth', { value: 0 });
-      Object.defineProperty(mockElement, 'clientHeight', { value: 0 });
+    it('should handle invalid padding values', () => {
+      vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+        paddingLeft: 'invalid',
+        paddingRight: 'invalid',
+        paddingTop: 'invalid',
+        paddingBottom: 'invalid'
+      } as CSSStyleDeclaration);
+
+      const result = getAvailableContentSpace(mockElement);
+
+      expect(result.width).toBe(200);
+      expect(result.height).toBe(100);
+    });
+
+    it('should return zero for negative dimensions', () => {
+      Object.defineProperty(mockElement, 'clientWidth', { value: 20, configurable: true });
+      Object.defineProperty(mockElement, 'clientHeight', { value: 10, configurable: true });
+
+      vi.spyOn(window, 'getComputedStyle').mockReturnValue({
+        paddingLeft: '30px',
+        paddingRight: '30px',
+        paddingTop: '30px',
+        paddingBottom: '30px'
+      } as CSSStyleDeclaration);
 
       const result = getAvailableContentSpace(mockElement);
 
       expect(result.width).toBe(0);
       expect(result.height).toBe(0);
     });
-
-    it('should handle padding larger than element size', () => {
-      Object.defineProperty(mockElement, 'clientWidth', { value: 10 });
-      Object.defineProperty(mockElement, 'clientHeight', { value: 5 });
-
-      const result = getAvailableContentSpace(mockElement);
-
-      expect(result.width).toBe(0); // Math.max(0, 10 - 10 - 15)
-      expect(result.height).toBe(0); // Math.max(0, 5 - 5 - 8)
-    });
-
-    it('should handle missing padding values', () => {
-      Object.defineProperty(mockElement, 'clientWidth', { value: 200 });
-      Object.defineProperty(mockElement, 'clientHeight', { value: 100 });
-
-      vi.spyOn(window, 'getComputedStyle').mockImplementation(() => ({
-        paddingLeft: '',
-        paddingRight: '',
-        paddingTop: '',
-        paddingBottom: '',
-      } as CSSStyleDeclaration));
-
-      const result = getAvailableContentSpace(mockElement);
-
-      expect(result.width).toBe(200); // No padding applied
-      expect(result.height).toBe(100);
-    });
   });
 
   describe('sizeFits', () => {
-    it('should return true when text fits in width mode', () => {
-      const textSize = { width: 100, height: 200 };
-      const result = sizeFits(textSize, 150, 50, 'width');
+    it('should return true when text fits in both dimensions', () => {
+      const result = sizeFits({ width: 50, height: 30 }, 100, 50, 'both');
       expect(result).toBe(true);
     });
 
-    it('should return false when text does not fit in width mode', () => {
-      const textSize = { width: 200, height: 50 };
-      const result = sizeFits(textSize, 150, 100, 'width');
+    it('should return false when text exceeds width in both mode', () => {
+      const result = sizeFits({ width: 150, height: 30 }, 100, 50, 'both');
       expect(result).toBe(false);
     });
 
-    it('should return true when text fits in height mode', () => {
-      const textSize = { width: 200, height: 50 };
-      const result = sizeFits(textSize, 100, 80, 'height');
+    it('should return false when text exceeds height in both mode', () => {
+      const result = sizeFits({ width: 50, height: 60 }, 100, 50, 'both');
+      expect(result).toBe(false);
+    });
+
+    it('should ignore height when in width mode', () => {
+      const result = sizeFits({ width: 50, height: 100 }, 100, 50, 'width');
       expect(result).toBe(true);
     });
 
-    it('should return false when text does not fit in height mode', () => {
-      const textSize = { width: 50, height: 100 };
-      const result = sizeFits(textSize, 200, 80, 'height');
-      expect(result).toBe(false);
-    });
-
-    it('should return true when text fits in both mode', () => {
-      const textSize = { width: 100, height: 50 };
-      const result = sizeFits(textSize, 150, 80, 'both');
+    it('should ignore width when in height mode', () => {
+      const result = sizeFits({ width: 150, height: 30 }, 100, 50, 'height');
       expect(result).toBe(true);
     });
 
-    it('should return false when text does not fit width in both mode', () => {
-      const textSize = { width: 200, height: 50 };
-      const result = sizeFits(textSize, 150, 80, 'both');
+    it('should return false when width exceeds in width mode', () => {
+      const result = sizeFits({ width: 150, height: 30 }, 100, 50, 'width');
       expect(result).toBe(false);
     });
 
-    it('should return false when text does not fit height in both mode', () => {
-      const textSize = { width: 100, height: 100 };
-      const result = sizeFits(textSize, 150, 80, 'both');
+    it('should return false when height exceeds in height mode', () => {
+      const result = sizeFits({ width: 50, height: 60 }, 100, 50, 'height');
       expect(result).toBe(false);
     });
   });

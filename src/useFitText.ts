@@ -3,7 +3,10 @@ import { UseFitTextOptions, UseFitTextReturn } from './types';
 import { calculateOptimalFontSize, getAvailableContentSpace } from './utils';
 
 /**
- * A hook to automatically adjust font size to fit its container
+ * A React hook that automatically adjusts font size to fit text within its container.
+ *
+ * @param options - Configuration options for the font fitting behavior
+ * @returns Object containing refs for container and text elements, plus the calculated font size
  */
 export const useFitText = ({
   minFontSize = 1,
@@ -28,38 +31,28 @@ export const useFitText = ({
       return;
     }
 
-    // Store current text content for comparison
     const currentTextContent = textRef.current.textContent || '';
-
-    // Get available content space accounting for padding
     const availableSpace = getAvailableContentSpace(containerRef.current);
 
-    // Don't proceed if container dimensions are zero
     if (availableSpace.width <= 0 || availableSpace.height <= 0) {
       return;
     }
 
-    // Check if dimensions and text content are the same as last calculation
     const prevDimensions = prevDimensionsRef.current;
     if (
       prevDimensions &&
       prevDimensions.width === availableSpace.width &&
       prevDimensions.height === availableSpace.height &&
       prevTextContentRef.current === currentTextContent &&
-      fontSize !== maxFontSize // Don't skip if we're using the max font size (initial state)
+      fontSize !== maxFontSize
     ) {
-      // Skip calculation if nothing changed
       return;
     }
 
-    // Mark as calculating to prevent concurrent calculations
     calculatingRef.current = true;
-
-    // Store current dimensions and text content for future comparisons
     prevDimensionsRef.current = { ...availableSpace };
     prevTextContentRef.current = currentTextContent;
 
-    // Apply line mode styles to the text element
     if (textRef.current) {
       if (lineMode === 'single') {
         textRef.current.style.whiteSpace = 'nowrap';
@@ -74,7 +67,7 @@ export const useFitText = ({
       }
     }
 
-    const best = calculateOptimalFontSize(
+    const optimalSize = calculateOptimalFontSize(
       textRef.current,
       availableSpace.width,
       availableSpace.height,
@@ -85,11 +78,9 @@ export const useFitText = ({
       lineMode
     );
 
-    // Only update if the size changed
-    if (best !== fontSize) {
-      // Apply the best font size
-      textRef.current.style.fontSize = `${best}px`;
-      setFontSize(best);
+    if (optimalSize !== fontSize) {
+      textRef.current.style.fontSize = `${optimalSize}px`;
+      setFontSize(optimalSize);
     }
 
     calculatingRef.current = false;
@@ -111,18 +102,14 @@ export const useFitText = ({
     }, debounceDelay);
   }, [calculateFontSize, debounceDelay]);
 
-  // Initial calculation and setup
   useLayoutEffect(() => {
-    // Use immediate calculation for initial render
     calculateFontSize();
 
-    // Setup ResizeObserver
     if (containerRef.current) {
       resizeObserverRef.current = new ResizeObserver(handleResize);
       resizeObserverRef.current.observe(containerRef.current);
     }
 
-    // Cleanup function
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect();
@@ -138,11 +125,8 @@ export const useFitText = ({
     };
   }, [calculateFontSize, handleResize]);
 
-  // Recalculate when dependencies change
   useEffect(() => {
-    // Reset cached dimensions to force recalculation when params change
     prevDimensionsRef.current = null;
-
     calculateFontSize();
   }, [minFontSize, maxFontSize, resolution, fitMode, lineMode, calculateFontSize]);
 
