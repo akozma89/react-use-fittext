@@ -216,8 +216,8 @@ export const calculateOptimalFontSize = (
 
     // Test initial guess
     clone.style.fontSize = `${initialGuess}px`;
-    let currentWidth = clone.scrollWidth;
-    let currentHeight = clone.scrollHeight;
+    const currentWidth = clone.scrollWidth;
+    const currentHeight = clone.scrollHeight;
 
     let bestSize: number;
 
