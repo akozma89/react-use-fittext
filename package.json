@@ -1,6 +1,6 @@
 {
   "name": "react-use-fittext",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React hook to automatically adjust font size to fit text in its container",
   "author": "Your Name",
   "license": "MIT",
