@@ -61,10 +61,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/react-use-fittext"
+    "url": "git+https://github.com/akozma89/react-use-fittext.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/react-use-fittext/issues"
+    "url": "https://github.com/akozma89/react-use-fittext/issues"
   },
-  "homepage": "https://github.com/yourusername/react-use-fittext#readme"
+  "homepage": "https://github.com/akozma89/react-use-fittext#readme"
 }
