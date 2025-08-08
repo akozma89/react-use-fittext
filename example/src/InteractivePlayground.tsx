@@ -1,36 +1,14 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useFitText } from 'react-use-fittext';
 import { ResizableBox } from './ResizableBox';
 
-interface InteractivePlaygroundProps {
-  text: string;
-  setText: (text: string) => void;
-  fitMode: 'width' | 'height' | 'both';
-  setFitMode: (mode: 'width' | 'height' | 'both') => void;
-  lineMode: 'single' | 'multi';
-  setLineMode: (mode: 'single' | 'multi') => void;
-  minFontSize: number;
-  setMinFontSize: (size: number) => void;
-  maxFontSize: number;
-  setMaxFontSize: (size: number) => void;
-  debounceDelay: number;
-  setDebounceDelay: (delay: number) => void;
-}
-
-export function InteractivePlayground({
-  text,
-  setText,
-  fitMode,
-  setFitMode,
-  lineMode,
-  setLineMode,
-  minFontSize,
-  setMinFontSize,
-  maxFontSize,
-  setMaxFontSize,
-  debounceDelay,
-  setDebounceDelay
-}: InteractivePlaygroundProps) {
+export function InteractivePlayground() {
+  const [text, setText] = useState('Resize this container and watch the text adjust to fit perfectly inside!');
+  const [fitMode, setFitMode] = useState<'width' | 'height' | 'both'>('both');
+  const [lineMode, setLineMode] = useState<'single' | 'multi'>('multi');
+  const [minFontSize, setMinFontSize] = useState(10);
+  const [maxFontSize, setMaxFontSize] = useState(100);
+  const [debounceDelay, setDebounceDelay] = useState(100);
   const { containerRef, textRef, fontSize } = useFitText({
     minFontSize,
     maxFontSize,

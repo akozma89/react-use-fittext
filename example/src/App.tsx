@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Description } from './Description'
 import { LineModeDemo } from './LineModeDemo'
 import { FitModeDemo } from './FitModeDemo'
@@ -6,13 +5,6 @@ import { InteractivePlayground } from './InteractivePlayground'
 import { PerformanceTest } from './PerformanceTest.tsx'
 
 function App() {
-  const [text, setText] = useState('Resize this container and watch the text adjust to fit perfectly inside!')
-  const [fitMode, setFitMode] = useState<'width' | 'height' | 'both'>('both')
-  const [lineMode, setLineMode] = useState<'single' | 'multi'>('multi')
-  const [minFontSize, setMinFontSize] = useState(10)
-  const [maxFontSize, setMaxFontSize] = useState(100)
-  const [debounceDelay, setDebounceDelay] = useState(100)
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-8">
@@ -28,20 +20,7 @@ function App() {
         <Description />
         <LineModeDemo />
         <FitModeDemo />
-        <InteractivePlayground
-          text={text}
-          setText={setText}
-          fitMode={fitMode}
-          setFitMode={setFitMode}
-          lineMode={lineMode}
-          setLineMode={setLineMode}
-          minFontSize={minFontSize}
-          setMinFontSize={setMinFontSize}
-          maxFontSize={maxFontSize}
-          setMaxFontSize={setMaxFontSize}
-          debounceDelay={debounceDelay}
-          setDebounceDelay={setDebounceDelay}
-        />
+        <InteractivePlayground />
         <PerformanceTest />
       </div>
     </div>
