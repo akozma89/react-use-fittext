@@ -323,7 +323,7 @@ export function PerformanceTest() {
         {/* Basic Settings */}
         <div className="mb-6">
           <h4 className="text-lg font-medium text-gray-700 mb-4">Basic Settings</h4>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Container Count */}
             <div className="bg-gray-50 p-4 rounded-lg flex flex-col flex-1/3">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -383,7 +383,7 @@ export function PerformanceTest() {
         {/* Font Size Settings */}
         <div className="mb-6">
           <h4 className="text-lg font-medium text-gray-700 mb-4">Font Size Settings</h4>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Min Font Size */}
             <div className="bg-blue-50 p-4 rounded-lg flex flex-col flex-1/3">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -421,7 +421,7 @@ export function PerformanceTest() {
         {/* Performance Settings */}
         <div>
           <h4 className="text-lg font-medium text-gray-700 mb-4">Performance Settings</h4>
-          <div className="flex gap-4">
+          <div className="flex flex-col md:flex-row gap-4">
             {/* Resolution */}
             <div className="bg-green-50 p-4 rounded-lg flex flex-col flex-1/2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
