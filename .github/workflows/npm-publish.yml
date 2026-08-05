@@ -94,7 +94,7 @@ jobs:
 
       - name: Version bump
         run: |
-          npm version ${{ github.event.inputs.version }} -m "chore(release): bump version to %s [skip ci]"
+          npm version ${{ github.event.inputs.version }} --no-git-tag-version
 
       - name: Get version from package.json
         id: package-version
@@ -126,7 +126,10 @@ jobs:
       # - name: Restore original package.json
       #   run: git checkout package.json
 
-      - name: Push version changes
+      - name: Commit and push version changes
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore(release): bump version to v${{ steps.package-version.outputs.version }} [skip ci]"
         run: git push --follow-tags
 
       - name: Create GitHub Release
