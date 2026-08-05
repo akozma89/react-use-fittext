@@ -14,9 +14,45 @@ const fontSizeCache = new Map<string, CacheEntry>();
 const CACHE_LIFETIME_MS = 30000;
 const MAX_ITERATIONS = 20;
 
-/**
- * Calculates available content space after accounting for padding.
- */
+// Persistent host for all measurement clones — reused across calls so we never
+// append/remove directly on document.body, which is the most expensive reflow point.
+let _measurementHost: HTMLElement | null = null;
+
+const getMeasurementHost = (): HTMLElement => {
+  if (!_measurementHost || !document.body.contains(_measurementHost)) {
+    _measurementHost = document.createElement('div');
+    _measurementHost.style.cssText =
+      'position:fixed;visibility:hidden;pointer-events:none;top:0;left:0;width:0;height:0;overflow:visible;';
+    document.body.appendChild(_measurementHost);
+  }
+  return _measurementHost;
+};
+
+const FONT_STYLE_PROPS = [
+  'fontFamily', 'fontWeight', 'fontStyle', 'fontVariant',
+  'letterSpacing', 'textTransform', 'wordSpacing',
+] as const;
+
+const copyComputedFontStyles = (source: HTMLElement, target: HTMLElement): void => {
+  const computed = window.getComputedStyle(source);
+
+  FONT_STYLE_PROPS.forEach(prop => {
+    (target.style as unknown as Record<string, string>)[prop] = computed[prop as keyof CSSStyleDeclaration] as string;
+  });
+
+  // lineHeight from getComputedStyle is always a px value (e.g. "125px" at 100px font-size).
+  // Copying it directly would freeze the clone's line-height at that px value regardless of
+  // what font-size the binary search tries, producing wrong scrollHeight measurements.
+  // Convert to a unitless ratio so it scales correctly at every tested font size.
+  const computedFontSizePx = parseFloat(computed.fontSize);
+  const computedLineHeightPx = parseFloat(computed.lineHeight);
+  if (!isNaN(computedLineHeightPx) && !isNaN(computedFontSizePx) && computedFontSizePx > 0) {
+    target.style.lineHeight = String(computedLineHeightPx / computedFontSizePx);
+  } else {
+    target.style.lineHeight = 'normal';
+  }
+};
+
 export const getAvailableContentSpace = (
   element: HTMLElement
 ): { width: number; height: number } => {
@@ -27,18 +63,12 @@ export const getAvailableContentSpace = (
   const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
   const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
 
-  const availableWidth = element.clientWidth - paddingLeft - paddingRight;
-  const availableHeight = element.clientHeight - paddingTop - paddingBottom;
-
   return {
-    width: Math.max(0, availableWidth),
-    height: Math.max(0, availableHeight)
+    width: Math.max(0, element.clientWidth - paddingLeft - paddingRight),
+    height: Math.max(0, element.clientHeight - paddingTop - paddingBottom),
   };
 };
 
-/**
- * Determines if text fits within container bounds based on fit mode.
- */
 export const sizeFits = (
   textSize: TextSize,
   containerWidth: number,
@@ -47,13 +77,9 @@ export const sizeFits = (
 ): boolean => {
   const fitsWidth = fitMode === 'height' || textSize.width <= containerWidth;
   const fitsHeight = fitMode === 'width' || textSize.height <= containerHeight;
-
   return fitsWidth && fitsHeight;
 };
 
-/**
- * Performs binary search to find optimal font size.
- */
 const binarySearchFontSize = (
   clone: HTMLElement,
   low: number,
@@ -86,9 +112,6 @@ const binarySearchFontSize = (
   return bestSize;
 };
 
-/**
- * Cleans up expired cache entries periodically.
- */
 const cleanupCache = (): void => {
   if (Math.random() < 0.001) {
     const expiredTime = Date.now() - CACHE_LIFETIME_MS;
@@ -100,23 +123,20 @@ const cleanupCache = (): void => {
   }
 };
 
-/**
- * Creates a cache key for font size calculations.
- */
 const createCacheKey = (
   containerWidth: number,
   containerHeight: number,
   text: string,
   fitMode: FitMode,
-  lineMode: LineMode
+  lineMode: LineMode,
+  minFontSize: number,
+  maxFontSize: number,
+  resolution: number,
+  fontKey: string
 ): string => {
-  const textSample = text.length > 50 ? text.substring(0, 50) + text.length : text;
-  return `${Math.round(containerWidth)},${Math.round(containerHeight)},${textSample},${fitMode},${lineMode}`;
+  return `${Math.round(containerWidth)},${Math.round(containerHeight)},${minFontSize},${maxFontSize},${resolution},${fitMode},${lineMode},${fontKey},${text}`;
 };
 
-/**
- * Creates and configures a clone element for font size testing.
- */
 const createTestClone = (
   textElement: HTMLElement,
   containerWidth: number,
@@ -129,7 +149,6 @@ const createTestClone = (
     : 'white-space: normal; word-wrap: break-word; overflow-wrap: break-word;';
 
   clone.style.cssText = `
-    visibility: hidden;
     position: absolute;
     top: 0;
     left: 0;
@@ -142,13 +161,11 @@ const createTestClone = (
     ${lineStyles}
   `;
 
-  document.body.appendChild(clone);
+  copyComputedFontStyles(textElement, clone);
+  getMeasurementHost().appendChild(clone);
   return clone;
 };
 
-/**
- * Calculates optimal font size for single-line text.
- */
 const calculateSingleLineFontSize = (
   clone: HTMLElement,
   minFontSize: number,
@@ -166,20 +183,9 @@ const calculateSingleLineFontSize = (
     return maxFontSize;
   }
 
-  return binarySearchFontSize(
-    clone,
-    minFontSize,
-    maxFontSize,
-    resolution,
-    containerWidth,
-    containerHeight,
-    fitMode
-  );
+  return binarySearchFontSize(clone, minFontSize, maxFontSize, resolution, containerWidth, containerHeight, fitMode);
 };
 
-/**
- * Calculates optimal font size for multi-line text using area estimation.
- */
 const calculateMultiLineFontSize = (
   clone: HTMLElement,
   text: string,
@@ -209,41 +215,12 @@ const calculateMultiLineFontSize = (
   currentHeight = clone.scrollHeight;
 
   if (sizeFits({ width: currentWidth, height: currentHeight }, containerWidth, containerHeight, fitMode)) {
-    return binarySearchFontSize(
-      clone,
-      initialGuess,
-      maxFontSize,
-      resolution,
-      containerWidth,
-      containerHeight,
-      fitMode
-    );
+    return binarySearchFontSize(clone, initialGuess, maxFontSize, resolution, containerWidth, containerHeight, fitMode);
   } else {
-    return binarySearchFontSize(
-      clone,
-      minFontSize,
-      initialGuess,
-      resolution,
-      containerWidth,
-      containerHeight,
-      fitMode
-    );
+    return binarySearchFontSize(clone, minFontSize, initialGuess, resolution, containerWidth, containerHeight, fitMode);
   }
 };
 
-/**
- * Calculates the optimal font size using binary search algorithm.
- *
- * @param textElement - The text element to resize
- * @param containerWidth - Available container width
- * @param containerHeight - Available container height
- * @param minFontSize - Minimum allowed font size
- * @param maxFontSize - Maximum allowed font size
- * @param resolution - Search precision
- * @param fitMode - How to fit the text (width, height, or both)
- * @param lineMode - Single or multi-line text handling
- * @returns Optimal font size in pixels
- */
 export const calculateOptimalFontSize = (
   textElement: HTMLElement,
   containerWidth: number,
@@ -255,11 +232,13 @@ export const calculateOptimalFontSize = (
   lineMode: LineMode = 'multi'
 ): number => {
   const text = textElement.textContent || '';
-  const cacheKey = createCacheKey(containerWidth, containerHeight, text, fitMode, lineMode);
+  const computed = window.getComputedStyle(textElement);
+  const fontKey = `${computed.fontFamily}|${computed.fontWeight}|${computed.fontStyle}|${computed.letterSpacing}|${computed.lineHeight}`;
+  const cacheKey = createCacheKey(containerWidth, containerHeight, text, fitMode, lineMode, minFontSize, maxFontSize, resolution, fontKey);
 
   const now = Date.now();
   const cached = fontSizeCache.get(cacheKey);
-  if (cached && (now - cached.timestamp < CACHE_LIFETIME_MS)) {
+  if (cached && now - cached.timestamp < CACHE_LIFETIME_MS) {
     return cached.fontSize;
   }
 
@@ -273,10 +252,9 @@ export const calculateOptimalFontSize = (
       : calculateMultiLineFontSize(clone, text, minFontSize, maxFontSize, resolution, containerWidth, containerHeight, fitMode);
 
     const clampedSize = Math.max(minFontSize, Math.min(maxFontSize, bestSize));
-
     fontSizeCache.set(cacheKey, { fontSize: clampedSize, timestamp: now });
     return clampedSize;
   } finally {
-    document.body.removeChild(clone);
+    clone.parentNode?.removeChild(clone);
   }
 };

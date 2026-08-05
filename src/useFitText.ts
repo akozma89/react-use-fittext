@@ -1,13 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { UseFitTextOptions, UseFitTextReturn } from './types';
 import { calculateOptimalFontSize, getAvailableContentSpace } from './utils';
 
-/**
- * A React hook that automatically adjusts font size to fit text within its container.
- *
- * @param options - Configuration options for the font fitting behavior
- * @returns Object containing refs for container and text elements, plus the calculated font size
- */
 export const useFitText = ({
   minFontSize = 1,
   maxFontSize = 100,
@@ -20,11 +14,13 @@ export const useFitText = ({
   const textRef = useRef<HTMLElement>(null);
   const [fontSize, setFontSize] = useState<number>(maxFontSize);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const mutationObserverRef = useRef<MutationObserver | null>(null);
   const frameRef = useRef<number | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const calculatingRef = useRef<boolean>(false);
   const prevDimensionsRef = useRef<{ width: number; height: number } | null>(null);
   const prevTextContentRef = useRef<string | null>(null);
+  const initialCalcDoneRef = useRef<boolean>(false);
 
   const calculateFontSize = useCallback(() => {
     if (!containerRef.current || !textRef.current || calculatingRef.current) {
@@ -40,11 +36,11 @@ export const useFitText = ({
 
     const prevDimensions = prevDimensionsRef.current;
     if (
+      initialCalcDoneRef.current &&
       prevDimensions &&
       prevDimensions.width === availableSpace.width &&
       prevDimensions.height === availableSpace.height &&
-      prevTextContentRef.current === currentTextContent &&
-      fontSize !== maxFontSize
+      prevTextContentRef.current === currentTextContent
     ) {
       return;
     }
@@ -83,8 +79,13 @@ export const useFitText = ({
       setFontSize(optimalSize);
     }
 
+    initialCalcDoneRef.current = true;
     calculatingRef.current = false;
-  }, [minFontSize, maxFontSize, resolution, fitMode, lineMode, fontSize]);
+  // fontSize intentionally omitted: the initialCalcDoneRef guard replaces the old
+  // `fontSize !== maxFontSize` check, keeping this callback stable across renders so
+  // the useLayoutEffect below only reconnects observers when actual options change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minFontSize, maxFontSize, resolution, fitMode, lineMode]);
 
   const handleResize = useCallback(() => {
     if (debounceTimerRef.current) {
@@ -103,6 +104,8 @@ export const useFitText = ({
   }, [calculateFontSize, debounceDelay]);
 
   useLayoutEffect(() => {
+    prevDimensionsRef.current = null;
+    initialCalcDoneRef.current = false;
     calculateFontSize();
 
     if (containerRef.current) {
@@ -110,25 +113,22 @@ export const useFitText = ({
       resizeObserverRef.current.observe(containerRef.current);
     }
 
+    if (textRef.current) {
+      mutationObserverRef.current = new MutationObserver(handleResize);
+      mutationObserverRef.current.observe(textRef.current, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+      });
+    }
+
     return () => {
-      if (resizeObserverRef.current) {
-        resizeObserverRef.current.disconnect();
-      }
-
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
+      resizeObserverRef.current?.disconnect();
+      mutationObserverRef.current?.disconnect();
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, [calculateFontSize, handleResize]);
-
-  useEffect(() => {
-    prevDimensionsRef.current = null;
-    calculateFontSize();
-  }, [minFontSize, maxFontSize, resolution, fitMode, lineMode, calculateFontSize]);
 
   return { containerRef, textRef, fontSize };
 };

@@ -207,9 +207,12 @@ export function PerformanceTest() {
       individualTimes.push(time);
       completedCount++;
 
-      // Update progress
+      // Update progress at most every 1% of total to avoid 50k React re-renders
       const progressPercent = (completedCount / config.containerCount) * 100;
-      setProgress(progressPercent);
+      const updateInterval = Math.max(1, Math.floor(config.containerCount / 100));
+      if (completedCount % updateInterval === 0 || completedCount === config.containerCount) {
+        setProgress(progressPercent);
+      }
 
       // Check if all measurements are complete
       if (completedCount === config.containerCount) {
