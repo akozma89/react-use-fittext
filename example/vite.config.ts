@@ -8,7 +8,7 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/react-use-fittext/' : '/',
   resolve: {
     alias: {
-      'react-use-fittext': resolve(__dirname, '../src'),
+      'react-use-fittext': resolve(import.meta.dirname, '../src'),
     },
   },
 });

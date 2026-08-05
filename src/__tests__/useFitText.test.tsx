@@ -43,11 +43,13 @@ describe('useFitText', () => {
 
     global.cancelAnimationFrame = vi.fn();
 
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      disconnect: vi.fn(),
-      unobserve: vi.fn(),
-    }));
+    global.ResizeObserver = vi.fn().mockImplementation(function() {
+      return {
+        observe: vi.fn(),
+        disconnect: vi.fn(),
+        unobserve: vi.fn(),
+      };
+    });
   });
 
   afterEach(() => {
@@ -135,11 +137,13 @@ describe('useFitText', () => {
 
   it('should set up ResizeObserver correctly', () => {
     const mockObserve = vi.fn();
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: mockObserve,
-      disconnect: vi.fn(),
-      unobserve: vi.fn(),
-    }));
+    global.ResizeObserver = vi.fn().mockImplementation(function() {
+      return {
+        observe: mockObserve,
+        disconnect: vi.fn(),
+        unobserve: vi.fn(),
+      };
+    });
 
     const { result } = renderHook(() => useFitText());
 
@@ -182,11 +186,13 @@ describe('useFitText', () => {
 
   it('should clean up on unmount', () => {
     const mockDisconnect = vi.fn();
-    global.ResizeObserver = vi.fn().mockImplementation(() => ({
-      observe: vi.fn(),
-      disconnect: mockDisconnect,
-      unobserve: vi.fn(),
-    }));
+    global.ResizeObserver = vi.fn().mockImplementation(function() {
+      return {
+        observe: vi.fn(),
+        disconnect: mockDisconnect,
+        unobserve: vi.fn(),
+      };
+    });
 
     const { result, unmount } = renderHook(() => useFitText());
 

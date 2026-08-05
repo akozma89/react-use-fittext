@@ -25,10 +25,10 @@ export interface UseFitTextOptions {
 
 export interface UseFitTextReturn {
   /** Ref to be applied to the container element */
-  containerRef: RefObject<HTMLElement>;
+  containerRef: RefObject<HTMLElement | null>;
 
   /** Ref to be applied to the text element */
-  textRef: RefObject<HTMLElement>;
+  textRef: RefObject<HTMLElement | null>;
 
   /** The calculated font size */
   fontSize: number;
